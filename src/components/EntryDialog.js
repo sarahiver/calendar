@@ -5,6 +5,7 @@ import Modal from './Modal';
 import { TYPES, STATUSES, HALF_DAYS, SELF_STATUSES, typeById, statusLabel, isApprover } from '@/lib/constants';
 import { formatRange } from '@/lib/dates';
 import { countWorkdays } from '@/lib/holidays';
+import { buildIcs, downloadIcs, icsFilename } from '@/lib/ics';
 
 export default function EntryDialog({ mode, entry, people, me, onClose, onSave, onDelete, onStatus }) {
   const [form, setForm] = useState({
@@ -24,10 +25,38 @@ export default function EntryDialog({ mode, entry, people, me, onClose, onSave, 
   const approver = isApprover(me);
   const personName = (id) => people.find((p) => p.id === id)?.name || '–';
 
+  function exportOutlook() {
+    const name = personName(entry.person_id);
+    const content = buildIcs({
+      entry,
+      personName: name,
+      deputyName: entry.deputy_id ? personName(entry.deputy_id) : null,
+      isOwn: !!me && me.id === entry.person_id,
+      title: document.title,
+    });
+    downloadIcs(icsFilename(name, entry), content);
+  }
+
+  const outlookButton = (
+    <button type="button" className="btn" onClick={exportOutlook} title="Als .ics-Datei herunterladen und in Outlook öffnen">
+      In Outlook übernehmen
+    </button>
+  );
+
   if (mode === 'view') {
     const t = typeById(entry.type);
     return (
-      <Modal title="Abwesenheit" onClose={onClose} footer={<button className="btn" onClick={onClose}>Schließen</button>}>
+      <Modal
+        title="Abwesenheit"
+        onClose={onClose}
+        footer={
+          <>
+            {outlookButton}
+            <span className="spacer" />
+            <button className="btn" onClick={onClose}>Schließen</button>
+          </>
+        }
+      >
         <dl className="details">
           <dt>Person</dt>
           <dd>{personName(entry.person_id)}</dd>
@@ -39,10 +68,7 @@ export default function EntryDialog({ mode, entry, people, me, onClose, onSave, 
           <dt>Arbeitstage</dt>
           <dd>{countWorkdays(entry.date_from, entry.date_to, entry.half_day).toLocaleString('de-DE')}</dd>
           <dt>Art</dt>
-          <dd>
-            <span className="dot" style={{ '--c': t.color }} />
-            {t.label}
-          </dd>
+          <dd>{t.label}</dd>
           <dt>Status</dt>
           <dd>
             <span className={`badge b-${entry.status}`}>{statusLabel(entry.status)}</span>
@@ -118,6 +144,7 @@ export default function EntryDialog({ mode, entry, people, me, onClose, onSave, 
         ) : (
           <button type="button" className="btn ghost danger-text" onClick={() => setConfirmDelete(true)}>Löschen</button>
         ))}
+      {mode === 'edit' && outlookButton}
       <span className="spacer" />
       {mode === 'edit' && approver && entry.status === 'beantragt' && (
         <>

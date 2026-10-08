@@ -276,7 +276,7 @@ table.list { width: 100%; border-collapse: collapse; }
   padding: 24px 12px; z-index: 50; overflow-y: auto;
 }
 .modal {
-  background: #fff; border-radius: 10px; width: 100%; max-width: 460px;
+  background: #fff; border-radius: 10px; width: 100%; max-width: 540px;
   box-shadow: 0 12px 40px rgba(16, 24, 40, 0.25);
   display: flex; flex-direction: column;
 }
@@ -294,7 +294,7 @@ table.list { width: 100%; border-collapse: collapse; }
 
 .form { display: flex; flex-direction: column; gap: 10px; }
 .form label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); flex: 1; }
-.form label.check { flex-direction: row; color: var(--text); }
+.form label.check { flex-direction: row; align-items: center; flex: 0 0 auto; color: var(--text); }
 .form label.narrow { flex: 0 0 110px; }
 .form .row { display: flex; gap: 10px; }
 .form input, .form select, .form textarea { color: var(--text); width: 100%; }
@@ -332,3 +332,52 @@ table.list { width: 100%; border-collapse: collapse; }
 }
 .debug dt { color: var(--muted); }
 .debug dd { margin: 0; color: var(--text); word-break: break-all; }
+
+/* ---------- Personenfarben ---------- */
+.pdot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--c); margin-right: 7px; vertical-align: 1px;
+}
+.type-letter {
+  display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 3px;
+  font-size: 10px; background: var(--surface); border: 1px solid var(--line-strong); color: var(--text);
+}
+.color-field { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.color-field input[type='color'] { width: 40px; height: 30px; padding: 2px; cursor: pointer; }
+.color-chip {
+  width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; cursor: pointer;
+  background: var(--c); box-shadow: 0 0 0 1px var(--line-strong);
+}
+.color-chip.active { box-shadow: 0 0 0 2px var(--text); }
+
+/* ---------- Jahresansicht ---------- */
+.yearview { display: flex; flex-direction: column; gap: 18px; }
+.year-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 18px; }
+@media (max-width: 1100px) { .year-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .year-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mini-title {
+  background: none; border: 0; padding: 0 0 4px; font-weight: 600; font-size: 13px; cursor: pointer; color: var(--text);
+}
+.mini-title:hover { color: var(--accent); }
+.mini-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.mini-head { font-size: 10px; color: var(--muted); text-align: center; }
+.mini-day {
+  position: relative; height: 26px; border-radius: 3px; background: #fff; border: 1px solid var(--line);
+  font-size: 10px; cursor: pointer; overflow: hidden;
+}
+.mini-day.mini-empty { border: 0; background: transparent; cursor: default; }
+.mini-day.weekend { background: var(--weekend); }
+.mini-day.holiday { background: var(--holiday); }
+.mini-day.today { box-shadow: inset 0 0 0 2px #e0b400; }
+.mini-dn { position: absolute; top: 1px; left: 3px; color: var(--muted); }
+.mini-day.holiday .mini-dn { color: var(--holiday-text); }
+.mini-stripes { position: absolute; left: 0; right: 0; bottom: 0; height: 10px; display: flex; }
+.ms { flex: 1; background: var(--c); }
+.ms-beantragt { opacity: 0.6; background: repeating-linear-gradient(135deg, var(--c) 0 2px, transparent 2px 4px); }
+.ms-geplant { opacity: 0.35; }
+.ms-abgelehnt { opacity: 0.15; }
+.year-summary h3 { font-size: 14px; margin: 0 0 6px; }
+.list.static tbody tr { cursor: default; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 13px; color: var(--muted); }
+.form input[type='checkbox'], .form input[type='color'] { width: auto; }

@@ -8,7 +8,7 @@ import { typeById, statusLabel } from '@/lib/constants';
 const HEAD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const MAX_CHIPS = 5;
 
-export default function MonthView({ cursor, people, entries, loggedIn, onOpen, onNew }) {
+export default function MonthView({ cursor, people, entries, colorOf, loggedIn, onOpen, onNew }) {
   const today = todayISO();
   const { from, to } = monthGridRange(cursor.y, cursor.m);
   const days = rangeDays(from, to);
@@ -52,14 +52,14 @@ export default function MonthView({ cursor, people, entries, loggedIn, onOpen, o
                 <button
                   key={e.id}
                   className={`chip st-${e.status}`}
-                  style={{ '--c': t.color }}
+                  style={{ '--c': colorOf(e.person_id) }}
                   title={`${p?.name} · ${t.label} · ${statusLabel(e.status)}\n${formatRange(e.date_from, e.date_to)}`}
                   onClick={(ev) => {
                     ev.stopPropagation();
                     onOpen(e);
                   }}
                 >
-                  {p?.short || p?.name}
+                  {p?.short || p?.name} · {t.short}
                   {e.half_day ? ' ½' : ''}
                 </button>
               );

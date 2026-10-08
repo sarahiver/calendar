@@ -18,7 +18,7 @@ export const GET = handler(async (request) => {
   const fields = user ? ENTRY_FULL_FIELDS : ENTRY_PUBLIC_FIELDS;
 
   const [people, entries, pending] = await Promise.all([
-    db().from('people').select('id, name, short, sort').eq('active', true)
+    db().from('people').select('id, name, short, sort, color').eq('active', true)
       .order('sort', { ascending: true }).order('name', { ascending: true }),
     db().from('entries').select(fields).lte('date_from', to).gte('date_to', from)
       .order('date_from', { ascending: true }),

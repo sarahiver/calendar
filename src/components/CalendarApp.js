@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MONTHS, todayISO, monthStart, monthEnd, monthGridRange, monthDays } from '@/lib/dates';
-import { TYPES, STATUSES, isApprover, isAdmin, roleLabel } from '@/lib/constants';
+import { TYPES, STATUSES, isApprover, isAdmin, roleLabel, buildColorMap } from '@/lib/constants';
 import TeamView from './TeamView';
 import MonthView from './MonthView';
 import ListView from './ListView';
+import YearView from './YearView';
 import EntryDialog from './EntryDialog';
 import LoginDialog from './LoginDialog';
 import PeopleAdmin from './PeopleAdmin';
@@ -14,6 +15,7 @@ import PasswordDialog from './PasswordDialog';
 const VIEWS = [
   { id: 'team', label: 'Team' },
   { id: 'month', label: 'Monat' },
+  { id: 'year', label: 'Jahr' },
   { id: 'list', label: 'Liste' },
 ];
 
@@ -81,6 +83,7 @@ export default function CalendarApp({ viewToken, title }) {
 
   const range = useMemo(() => {
     if (view === 'month') return monthGridRange(cursor.y, cursor.m);
+    if (view === 'year') return { from: `${cursor.y}-01-01`, to: `${cursor.y}-12-31` };
     if (view === 'list') {
       const end = shiftMonth(cursor, 2);
       return { from: monthStart(cursor.y, cursor.m), to: monthEnd(end.y, end.m) };
@@ -112,6 +115,9 @@ export default function CalendarApp({ viewToken, title }) {
   }, [toast]);
 
   const me = data.me;
+  const colorMap = useMemo(() => buildColorMap(data.people), [data.people]);
+  const colorOf = (id) => colorMap.get(id) || '#5f6b7a';
+  const step = view === 'year' ? 12 : 1;
   const personIds = useMemo(() => new Set(data.people.map((p) => p.id)), [data.people]);
   const people = useMemo(
     () => (personFilter === 'all' ? data.people : data.people.filter((p) => p.id === personFilter)),
@@ -178,7 +184,9 @@ export default function CalendarApp({ viewToken, title }) {
   }
 
   const label =
-    view === 'list'
+    view === 'year'
+      ? String(cursor.y)
+      : view === 'list'
       ? (() => {
           const end = shiftMonth(cursor, 2);
           return `${MONTHS[cursor.m].slice(0, 3)} – ${MONTHS[end.m].slice(0, 3)} ${end.y}`;
@@ -221,14 +229,14 @@ export default function CalendarApp({ viewToken, title }) {
 
         <div className="toolbar">
           <div className="nav">
-            <button className="btn icon" aria-label="Zurück" onClick={() => setCursor((c) => shiftMonth(c, -1))}>‹</button>
+            <button className="btn icon" aria-label="Zurück" onClick={() => setCursor((c) => shiftMonth(c, -step))}>‹</button>
             <button
               className="btn"
               onClick={() => setCursor({ y: Number(today.slice(0, 4)), m: Number(today.slice(5, 7)) - 1 })}
             >
               Heute
             </button>
-            <button className="btn icon" aria-label="Weiter" onClick={() => setCursor((c) => shiftMonth(c, 1))}>›</button>
+            <button className="btn icon" aria-label="Weiter" onClick={() => setCursor((c) => shiftMonth(c, step))}>›</button>
             <span className="period">{label}</span>
             {loading && <span className="spinner" aria-label="Lädt" />}
           </div>
@@ -280,6 +288,7 @@ export default function CalendarApp({ viewToken, title }) {
             people={people}
             entries={entries}
             days={monthDays(cursor.y, cursor.m)}
+            colorOf={colorOf}
             canCreateFor={canCreateFor}
             onOpen={openEntry}
             onNew={openNew}
@@ -290,9 +299,22 @@ export default function CalendarApp({ viewToken, title }) {
             cursor={cursor}
             people={data.people}
             entries={entries}
+            colorOf={colorOf}
             loggedIn={!!me}
             onOpen={openEntry}
             onNew={(date) => openNew(personFilter !== 'all' ? personFilter : me?.id, date)}
+          />
+        )}
+        {view === 'year' && (
+          <YearView
+            year={cursor.y}
+            people={people}
+            entries={entries}
+            colorOf={colorOf}
+            onPickMonth={(m) => {
+              setCursor({ y: cursor.y, m });
+              changeView('team');
+            }}
           />
         )}
         {view === 'list' && (
@@ -300,6 +322,7 @@ export default function CalendarApp({ viewToken, title }) {
             people={data.people}
             entries={entries}
             pending={isApprover(me) ? data.pending : []}
+            colorOf={colorOf}
             onOpen={openEntry}
             onStatus={setStatus}
           />
@@ -307,9 +330,17 @@ export default function CalendarApp({ viewToken, title }) {
       </section>
 
       <footer className="legend">
+        {view !== 'team' &&
+          people.map((p) => (
+            <span key={p.id} className="legend-item">
+              <i className="swatch" style={{ '--c': colorOf(p.id) }} />
+              {p.short || p.name}
+            </span>
+          ))}
+        {view !== 'team' && <span className="legend-sep" />}
         {TYPES.map((t) => (
           <span key={t.id} className="legend-item">
-            <i className="swatch" style={{ '--c': t.color }} />
+            <b className="type-letter">{t.short}</b>
             {t.label}
           </span>
         ))}

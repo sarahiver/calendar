@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Modal from './Modal';
-import { ROLES, roleLabel } from '@/lib/constants';
+import { ROLES, roleLabel, PERSON_COLORS, buildColorMap } from '@/lib/constants';
 
-const EMPTY = { name: '', short: '', email: '', role: 'mitarbeitend', active: true, sort: 0, password: '' };
+const EMPTY = { name: '', short: '', email: '', role: 'mitarbeitend', active: true, sort: 0, password: '', color: '' };
 
 export default function PeopleAdmin({ api, me, onClose }) {
   const [people, setPeople] = useState([]);
@@ -26,6 +26,10 @@ export default function PeopleAdmin({ api, me, onClose }) {
     load();
   }, [load]);
 
+  // Gleiche Standardfarben wie im Kalender (dort zählen nur aktive Personen)
+  const colorMap = useMemo(() => buildColorMap(people.filter((p) => p.active)), [people]);
+  const shownColor = (p) => p.color || colorMap.get(p.id) || '#5f6b7a';
+
   const set = (key) => (e) =>
     setForm((f) => ({ ...f, [key]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
@@ -34,7 +38,7 @@ export default function PeopleAdmin({ api, me, onClose }) {
     setBusy(true);
     setError(null);
     try {
-      const body = { ...form, sort: Number(form.sort) || 0, password: form.password || undefined };
+      const body = { ...form, sort: Number(form.sort) || 0, password: form.password || undefined, color: form.color || null };
       await api(form.id ? `/api/people/${form.id}` : '/api/people', { method: form.id ? 'PATCH' : 'POST', body });
       setForm(null);
       await load();
@@ -106,6 +110,31 @@ export default function PeopleAdmin({ api, me, onClose }) {
               <input type="number" value={form.sort} onChange={set('sort')} />
             </label>
           </div>
+          <div className="form-group">
+            <span className="form-label">Farbe im Kalender</span>
+            <div className="color-field">
+              {PERSON_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={form.color === c ? 'color-chip active' : 'color-chip'}
+                  style={{ '--c': c }}
+                  aria-label={`Farbe ${c}`}
+                  onClick={() => setForm((f) => ({ ...f, color: c }))}
+                />
+              ))}
+              <input
+                type="color"
+                value={form.color || '#1f6fb2'}
+                onChange={set('color')}
+                title="Eigene Farbe wählen"
+              />
+              <button type="button" className="btn small ghost" onClick={() => setForm((f) => ({ ...f, color: '' }))}>
+                Automatisch
+              </button>
+            </div>
+            <span className="hint">{form.color ? `Gewählt: ${form.color}` : 'Automatisch: Farbe ergibt sich aus der Reihenfolge.'}</span>
+          </div>
           <label className="check">
             <input type="checkbox" checked={form.active} onChange={set('active')} />
             Aktiv (im Kalender sichtbar, Anmeldung möglich)
@@ -129,6 +158,7 @@ export default function PeopleAdmin({ api, me, onClose }) {
               <thead>
                 <tr>
                   <th>Name</th>
+                  <th>Farbe</th>
                   <th>Kürzel</th>
                   <th>E-Mail</th>
                   <th>Rolle</th>
@@ -141,13 +171,17 @@ export default function PeopleAdmin({ api, me, onClose }) {
                 {people.map((p) => (
                   <tr key={p.id} className={p.active ? '' : 'inactive'}>
                     <td>{p.name}</td>
+                    <td>
+                      <span className="dot" style={{ '--c': shownColor(p) }} />
+                      {p.color ? '' : <span className="hint">auto</span>}
+                    </td>
                     <td>{p.short}</td>
                     <td>{p.email || '–'}</td>
                     <td>{roleLabel(p.role)}</td>
                     <td>{!p.email ? '–' : !p.has_password ? 'Nicht gesetzt' : p.must_change_password ? 'Startpasswort' : 'Gesetzt'}</td>
                     <td>{p.active ? 'Aktiv' : 'Inaktiv'}</td>
                     <td className="actions">
-                      <button className="btn small" onClick={() => setForm({ ...p, password: '' })}>Bearbeiten</button>
+                      <button className="btn small" onClick={() => setForm({ ...p, password: '', color: p.color || '' })}>Bearbeiten</button>
                       {p.id !== me?.id &&
                         (confirmId === p.id ? (
                           <span className="confirm">
