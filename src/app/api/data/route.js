@@ -30,7 +30,9 @@ export const GET = handler(async (request) => {
   for (const r of [people, entries, pending]) if (r.error) throw r.error;
 
   return json({
-    me: user ? { id: user.id, name: user.name, short: user.short, role: user.role } : null,
+    me: user
+      ? { id: user.id, name: user.name, short: user.short, role: user.role, mustChange: !!user.must_change_password }
+      : null,
     people: people.data,
     entries: entries.data,
     pending: pending.data,

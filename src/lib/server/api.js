@@ -19,12 +19,16 @@ export class HttpError extends Error {
  * Jeder API-Aufruf braucht das View-Token aus dem iFrame-Seitenaufruf.
  * Optional: Anmeldung und bestimmte Rollen.
  */
-export async function guard(request, { login = false, roles } = {}) {
+export async function guard(request, { login = false, roles, allowMustChange = false } = {}) {
   if (!verifyViewToken(request.headers.get('x-view-token'))) {
     throw new HttpError('Ansicht abgelaufen. Bitte Seite neu laden.', 401, 'view_expired');
   }
   const user = await getSessionUser(request);
   if (login && !user) throw new HttpError('Bitte anmelden.', 401, 'login_required');
+  // Mit Startpasswort darf nur das Passwort geändert werden
+  if ((login || roles) && user?.must_change_password && !allowMustChange) {
+    throw new HttpError('Bitte zuerst ein eigenes Passwort festlegen.', 403, 'must_change');
+  }
   if (roles && (!user || !roles.includes(user.role))) {
     throw new HttpError('Dafür fehlt die Berechtigung.', 403, 'forbidden');
   }

@@ -9,6 +9,7 @@ import ListView from './ListView';
 import EntryDialog from './EntryDialog';
 import LoginDialog from './LoginDialog';
 import PeopleAdmin from './PeopleAdmin';
+import PasswordDialog from './PasswordDialog';
 
 const VIEWS = [
   { id: 'team', label: 'Team' },
@@ -49,6 +50,7 @@ export default function CalendarApp({ viewToken, title }) {
   const [dialog, setDialog] = useState(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
@@ -208,6 +210,7 @@ export default function CalendarApp({ viewToken, title }) {
                 </span>
                 <button className="btn primary" onClick={() => openNew(me.id, today)}>+ Eintrag</button>
                 {isAdmin(me) && <button className="btn" onClick={() => setAdminOpen(true)}>Personen</button>}
+                <button className="btn ghost" onClick={() => setPasswordOpen(true)}>Passwort</button>
                 <button className="btn ghost" onClick={logout}>Abmelden</button>
               </>
             ) : (
@@ -342,6 +345,22 @@ export default function CalendarApp({ viewToken, title }) {
           onDone={() => {
             setLoginOpen(false);
             setToast('Angemeldet');
+            load();
+          }}
+        />
+      )}
+      {me && (me.mustChange || passwordOpen) && (
+        <PasswordDialog
+          api={api}
+          forced={!!me.mustChange}
+          onClose={() => setPasswordOpen(false)}
+          onLogout={() => {
+            setPasswordOpen(false);
+            logout();
+          }}
+          onDone={() => {
+            setPasswordOpen(false);
+            setToast('Passwort gespeichert');
             load();
           }}
         />

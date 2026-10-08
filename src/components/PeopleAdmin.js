@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Modal from './Modal';
 import { ROLES, roleLabel } from '@/lib/constants';
 
-const EMPTY = { name: '', short: '', email: '', role: 'mitarbeitend', active: true, sort: 0 };
+const EMPTY = { name: '', short: '', email: '', role: 'mitarbeitend', active: true, sort: 0, password: '' };
 
 export default function PeopleAdmin({ api, me, onClose }) {
   const [people, setPeople] = useState([]);
@@ -34,7 +34,7 @@ export default function PeopleAdmin({ api, me, onClose }) {
     setBusy(true);
     setError(null);
     try {
-      const body = { ...form, sort: Number(form.sort) || 0 };
+      const body = { ...form, sort: Number(form.sort) || 0, password: form.password || undefined };
       await api(form.id ? `/api/people/${form.id}` : '/api/people', { method: form.id ? 'PATCH' : 'POST', body });
       setForm(null);
       await load();
@@ -77,6 +77,21 @@ export default function PeopleAdmin({ api, me, onClose }) {
             E-Mail (für die Anmeldung)
             <input type="email" value={form.email || ''} onChange={set('email')} placeholder="leer = kein Login" />
           </label>
+          {form.id !== me?.id && (
+            <label>
+              {form.id && form.has_password ? 'Neues Startpasswort (leer = unverändert)' : 'Startpasswort (mind. 10 Zeichen)'}
+              <input
+                type="text"
+                value={form.password || ''}
+                onChange={set('password')}
+                autoComplete="off"
+                placeholder={form.email ? '' : 'Nur mit E-Mail-Adresse möglich'}
+              />
+            </label>
+          )}
+          {form.id !== me?.id && (
+            <p className="hint">Die Person muss das Startpasswort bei der ersten Anmeldung ändern. Teilen Sie es ihr persönlich mit.</p>
+          )}
           <div className="row">
             <label>
               Rolle
@@ -117,6 +132,7 @@ export default function PeopleAdmin({ api, me, onClose }) {
                   <th>Kürzel</th>
                   <th>E-Mail</th>
                   <th>Rolle</th>
+                  <th>Passwort</th>
                   <th>Status</th>
                   <th />
                 </tr>
@@ -128,9 +144,10 @@ export default function PeopleAdmin({ api, me, onClose }) {
                     <td>{p.short}</td>
                     <td>{p.email || '–'}</td>
                     <td>{roleLabel(p.role)}</td>
+                    <td>{!p.email ? '–' : !p.has_password ? 'Nicht gesetzt' : p.must_change_password ? 'Startpasswort' : 'Gesetzt'}</td>
                     <td>{p.active ? 'Aktiv' : 'Inaktiv'}</td>
                     <td className="actions">
-                      <button className="btn small" onClick={() => setForm({ ...p })}>Bearbeiten</button>
+                      <button className="btn small" onClick={() => setForm({ ...p, password: '' })}>Bearbeiten</button>
                       {p.id !== me?.id &&
                         (confirmId === p.id ? (
                           <span className="confirm">

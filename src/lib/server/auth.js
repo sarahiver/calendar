@@ -33,7 +33,7 @@ export async function getSessionUser(request) {
   if (!token) return null;
   const { data, error } = await db()
     .from('sessions')
-    .select('id, expires_at, person:people(id, name, short, email, role, active)')
+    .select('id, expires_at, person:people(id, name, short, email, role, active, must_change_password)')
     .eq('token_hash', sha256(token))
     .maybeSingle();
   if (error || !data || !data.person) return null;
