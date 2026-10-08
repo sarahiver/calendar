@@ -323,3 +323,12 @@ table.list { width: 100%; border-collapse: collapse; }
   .month-day { min-height: 70px; }
   .chip { font-size: 11px; padding: 0 3px; }
 }
+
+/* ---------- Diagnose (GATE_DEBUG=true) ---------- */
+.debug {
+  margin: 16px 0 0; padding: 10px 12px; text-align: left; font-size: 12px;
+  display: grid; grid-template-columns: 110px 1fr; gap: 4px 10px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.debug dt { color: var(--muted); }
+.debug dd { margin: 0; color: var(--text); word-break: break-all; }
