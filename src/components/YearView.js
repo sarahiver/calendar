@@ -38,7 +38,7 @@ export default function YearView({ year, people, entries, colorOf, onPickMonth }
 
   // Jahressumme je Person (Arbeitstage, auf das Jahr begrenzt)
   const summary = useMemo(() => {
-    const rows = new Map(people.map((p) => [p.id, { genehmigt: 0, beantragt: 0, geplant: 0, sonstige: 0 }]));
+    const rows = new Map(people.map((p) => [p.id, { genehmigt: 0, beantragt: 0, geplant: 0, sonstige: 0, homeoffice: 0 }]));
     for (const e of entries) {
       const row = rows.get(e.person_id);
       if (!row || e.status === 'abgelehnt') continue;
@@ -46,6 +46,7 @@ export default function YearView({ year, people, entries, colorOf, onPickMonth }
       const to = e.date_to > yearEnd ? yearEnd : e.date_to;
       const days = countWorkdays(from, to, e.half_day);
       if (e.type === 'urlaub') row[e.status] += days;
+      else if (e.type === 'homeoffice') row.homeoffice += days;
       else row.sonstige += days;
     }
     return rows;
@@ -113,6 +114,7 @@ export default function YearView({ year, people, entries, colorOf, onPickMonth }
                 <th className="num">beantragt</th>
                 <th className="num">geplant</th>
                 <th className="num">Sonstige Abwesenheit</th>
+                <th className="num">Homeoffice</th>
               </tr>
             </thead>
             <tbody>
@@ -128,6 +130,7 @@ export default function YearView({ year, people, entries, colorOf, onPickMonth }
                     <td className="num">{fmt(r.beantragt)}</td>
                     <td className="num">{fmt(r.geplant)}</td>
                     <td className="num">{fmt(r.sonstige)}</td>
+                    <td className="num">{fmt(r.homeoffice)}</td>
                   </tr>
                 );
               })}

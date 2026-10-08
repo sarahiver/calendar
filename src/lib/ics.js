@@ -43,7 +43,7 @@ export function buildIcs({ entry, personName, deputyName, isOwn, title }) {
   }
 
   // Eigene Abwesenheit = "Abwesend", Abwesenheit anderer = "Frei" (blockiert den eigenen Kalender nicht)
-  const busy = isOwn ? 'OOF' : 'FREE';
+  const busy = !isOwn ? 'FREE' : entry.type === 'homeoffice' ? 'WORKINGELSEWHERE' : 'OOF';
 
   const lines = [
     'BEGIN:VCALENDAR',

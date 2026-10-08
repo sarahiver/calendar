@@ -118,6 +118,10 @@ export default function CalendarApp({ viewToken, title }) {
   const colorMap = useMemo(() => buildColorMap(data.people), [data.people]);
   const colorOf = (id) => colorMap.get(id) || '#5f6b7a';
   const step = view === 'year' ? 12 : 1;
+  const pendingCount = useMemo(
+    () => new Set(data.pending.map((e) => e.series_id || e.id)).size,
+    [data.pending]
+  );
   const personIds = useMemo(() => new Set(data.people.map((p) => p.id)), [data.people]);
   const people = useMemo(
     () => (personFilter === 'all' ? data.people : data.people.filter((p) => p.id === personFilter)),
@@ -153,24 +157,29 @@ export default function CalendarApp({ viewToken, title }) {
   };
 
   async function saveEntry(form, id) {
-    await api(id ? `/api/entries/${id}` : '/api/entries', { method: id ? 'PATCH' : 'POST', body: form });
+    const res = await api(id ? `/api/entries/${id}` : '/api/entries', { method: id ? 'PATCH' : 'POST', body: form });
     setDialog(null);
-    setToast('Gespeichert');
+    if (form.repeat) {
+      setToast(`${res.created} Serientermine angelegt${res.skipped ? `, ${res.skipped} übersprungen (bestehende Einträge)` : ''}`);
+    } else {
+      setToast(res.updated > 1 ? `${res.updated} Termine geändert` : 'Gespeichert');
+    }
     load();
   }
 
-  async function deleteEntry(id) {
-    await api(`/api/entries/${id}`, { method: 'DELETE' });
+  async function deleteEntry(id, scope = 'single') {
+    const res = await api(`/api/entries/${id}?scope=${scope}`, { method: 'DELETE' });
     setDialog(null);
-    setToast('Eintrag gelöscht');
+    setToast(res.deleted > 1 ? `${res.deleted} Termine gelöscht` : 'Eintrag gelöscht');
     load();
   }
 
-  async function setStatus(id, status) {
+  async function setStatus(id, status, scope = 'single') {
     try {
-      await api(`/api/entries/${id}`, { method: 'PATCH', body: { status } });
+      const res = await api(`/api/entries/${id}`, { method: 'PATCH', body: { status, scope } });
       setDialog(null);
-      setToast(status === 'genehmigt' ? 'Genehmigt' : 'Abgelehnt');
+      const what = status === 'genehmigt' ? 'Genehmigt' : 'Abgelehnt';
+      setToast(res.updated > 1 ? `${what}: ${res.updated} Termine` : what);
       load();
     } catch (e) {
       setToast(e.message);
@@ -275,10 +284,10 @@ export default function CalendarApp({ viewToken, title }) {
         </div>
       )}
 
-      {isApprover(me) && data.pending.length > 0 && view !== 'list' && (
+      {isApprover(me) && pendingCount > 0 && view !== 'list' && (
         <button className="pending-hint" onClick={() => changeView('list')}>
-          {data.pending.length} offene{data.pending.length === 1 ? 'r' : ''} Antrag
-          {data.pending.length === 1 ? '' : 'e'} – zur Liste
+          {pendingCount} offene{pendingCount === 1 ? 'r' : ''} Antrag
+          {pendingCount === 1 ? '' : 'e'} – zur Liste
         </button>
       )}
 

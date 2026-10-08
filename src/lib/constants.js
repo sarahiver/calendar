@@ -1,9 +1,15 @@
+// absent: false = Person arbeitet (zählt nicht als Abwesenheit)
 export const TYPES = [
-  { id: 'urlaub', label: 'Urlaub', short: 'U', color: '#2f7d5b' },
-  { id: 'ausgleich', label: 'Gleitzeit / Ausgleich', short: 'G', color: '#2f6fae' },
-  { id: 'dienstreise', label: 'Dienstreise', short: 'D', color: '#8156a3' },
-  { id: 'fortbildung', label: 'Fortbildung', short: 'F', color: '#b8741a' },
-  { id: 'abwesend', label: 'Sonstige Abwesenheit', short: 'A', color: '#5f6b7a' },
+  { id: 'urlaub', label: 'Urlaub', short: 'U' },
+  { id: 'ausgleich', label: 'Gleitzeit / Ausgleich', short: 'G' },
+  { id: 'teilzeit', label: 'Abwesend Teilzeit', short: 'TZ' },
+  { id: 'homeoffice', label: 'Arbeit abweichend im Homeoffice', short: 'HO', absent: false },
+  { id: 'dienstreise', label: 'Dienstreise', short: 'D' },
+  { id: 'fortbildung', label: 'Fortbildung', short: 'F' },
+  { id: 'seminar', label: 'Seminar', short: 'S' },
+  { id: 'workshop', label: 'Workshop / Gremienarbeit', short: 'W' },
+  { id: 'betriebsausflug', label: 'Teilnahme Betriebsausflug', short: 'B' },
+  { id: 'abwesend', label: 'Sonstige Abwesenheit', short: 'A' },
 ];
 
 export const STATUSES = [
@@ -29,6 +35,7 @@ export const HALF_DAYS = [
 export const SELF_STATUSES = ['geplant', 'beantragt'];
 
 export const typeById = (id) => TYPES.find((t) => t.id === id) || TYPES[TYPES.length - 1];
+export const countsAsAbsent = (typeId) => typeById(typeId).absent !== false;
 export const statusLabel = (id) => STATUSES.find((s) => s.id === id)?.label || id;
 export const roleLabel = (id) => ROLES.find((r) => r.id === id)?.label || id;
 

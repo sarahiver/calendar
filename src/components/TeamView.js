@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { WEEKDAYS, weekday, isWeekend, todayISO, formatRange } from '@/lib/dates';
 import { holidayName } from '@/lib/holidays';
-import { typeById, statusLabel } from '@/lib/constants';
+import { typeById, statusLabel, countsAsAbsent } from '@/lib/constants';
 
 export default function TeamView({ people, entries, days, colorOf, canCreateFor, onOpen, onNew }) {
   const today = todayISO();
@@ -30,7 +30,7 @@ export default function TeamView({ people, entries, days, colorOf, canCreateFor,
     const ids = new Set();
     for (const p of people) {
       const list = cells.get(`${p.id}|${d}`);
-      if (list?.some((e) => e.status !== 'abgelehnt')) ids.add(p.id);
+      if (list?.some((e) => e.status !== 'abgelehnt' && countsAsAbsent(e.type))) ids.add(p.id);
     }
     return ids.size;
   };
@@ -81,7 +81,7 @@ export default function TeamView({ people, entries, days, colorOf, canCreateFor,
                           key={e.id}
                           className={`bar st-${e.status} half-${e.half_day || 'full'}`}
                           style={{ '--c': colorOf(e.person_id) }}
-                          title={`${p.name} · ${t.label} · ${statusLabel(e.status)}\n${formatRange(e.date_from, e.date_to)}${e.half_day ? ` (${e.half_day})` : ''}`}
+                          title={`${e.series_id ? '↻ ' : ''}${p.name} · ${t.label} · ${statusLabel(e.status)}\n${formatRange(e.date_from, e.date_to)}${e.half_day ? ` (${e.half_day})` : ''}`}
                           onClick={(ev) => {
                             ev.stopPropagation();
                             onOpen(e);

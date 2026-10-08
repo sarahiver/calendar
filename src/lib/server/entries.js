@@ -4,7 +4,7 @@ import { HttpError, isUuid } from './api';
 import { TYPES, STATUSES, SELF_STATUSES, isApprover } from '../constants';
 import { isValidISO, diffDays } from '../dates';
 
-export const ENTRY_PUBLIC_FIELDS = 'id, person_id, type, status, date_from, date_to, half_day, deputy_id';
+export const ENTRY_PUBLIC_FIELDS = 'id, person_id, type, status, date_from, date_to, half_day, deputy_id, series_id';
 export const ENTRY_FULL_FIELDS = `${ENTRY_PUBLIC_FIELDS}, note, updated_at`;
 
 // Eingaben prüfen und normalisieren (Ergebnis = Datensatz ohne id)
@@ -88,5 +88,22 @@ export async function loadEntry(id) {
   const { data, error } = await db().from('entries').select('*').eq('id', id).maybeSingle();
   if (error) throw error;
   if (!data) throw new HttpError('Eintrag nicht gefunden.', 404);
+  return data;
+}
+
+// Felder, die bei Serien-Änderungen auf alle Termine übertragen werden (keine Daten/Personen)
+export const SERIES_FIELDS = ['type', 'status', 'half_day', 'deputy_id', 'note'];
+
+export function parseScope(value) {
+  return ['single', 'following', 'series'].includes(value) ? value : 'single';
+}
+
+// Alle Termine einer Serie laden (scope "following": ab dem Datum des gewählten Termins)
+export async function loadSeriesEntries(existing, scope) {
+  if (!existing.series_id || scope === 'single') return [existing];
+  let q = db().from('entries').select('*').eq('series_id', existing.series_id);
+  if (scope === 'following') q = q.gte('date_from', existing.date_from);
+  const { data, error } = await q.order('date_from', { ascending: true });
+  if (error) throw error;
   return data;
 }
