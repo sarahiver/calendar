@@ -29,7 +29,7 @@ async function failCount(column, value) {
 }
 
 export const POST = handler(async (request) => {
-  await guard(request);
+  await guard(request, { pin: false });
   const body = await readBody(request);
   const email = String(body.email || '').trim().toLowerCase();
   const password = String(body.password || '');

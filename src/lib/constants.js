@@ -1,16 +1,16 @@
 // absent: false = Person arbeitet (zählt nicht als Abwesenheit)
+// "Sonstige Abwesenheit" umfasst auch Gleitzeit/Ausgleich und Teilzeit.
 export const TYPES = [
   { id: 'urlaub', label: 'Urlaub', short: 'U' },
-  { id: 'ausgleich', label: 'Gleitzeit / Ausgleich', short: 'G' },
-  { id: 'teilzeit', label: 'Abwesend Teilzeit', short: 'TZ' },
+  { id: 'abwesend', label: 'Sonstige Abwesenheit (inkl. GZ / TZ)', short: 'A' },
   { id: 'homeoffice', label: 'Arbeit abweichend im Homeoffice', short: 'HO', absent: false },
   { id: 'dienstreise', label: 'Dienstreise', short: 'D' },
-  { id: 'fortbildung', label: 'Fortbildung', short: 'F' },
-  { id: 'seminar', label: 'Seminar', short: 'S' },
-  { id: 'workshop', label: 'Workshop / Gremienarbeit', short: 'W' },
+  { id: 'fortbildung', label: 'Fortbildung / Seminar', short: 'F' },
+  { id: 'gremienarbeit', label: 'Gremienarbeit', short: 'G' },
   { id: 'betriebsausflug', label: 'Teilnahme Betriebsausflug', short: 'B' },
-  { id: 'abwesend', label: 'Sonstige Abwesenheit', short: 'A' },
 ];
+
+export const DEFAULT_TYPE = 'abwesend';
 
 export const STATUSES = [
   { id: 'geplant', label: 'Geplant' },
@@ -34,7 +34,7 @@ export const HALF_DAYS = [
 // Status, die Mitarbeitende selbst setzen dürfen
 export const SELF_STATUSES = ['geplant', 'beantragt'];
 
-export const typeById = (id) => TYPES.find((t) => t.id === id) || TYPES[TYPES.length - 1];
+export const typeById = (id) => TYPES.find((t) => t.id === id) || TYPES.find((t) => t.id === DEFAULT_TYPE);
 export const countsAsAbsent = (typeId) => typeById(typeId).absent !== false;
 export const statusLabel = (id) => STATUSES.find((s) => s.id === id)?.label || id;
 export const roleLabel = (id) => ROLES.find((r) => r.id === id)?.label || id;

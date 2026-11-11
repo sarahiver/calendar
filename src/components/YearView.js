@@ -113,7 +113,7 @@ export default function YearView({ year, people, entries, colorOf, onPickMonth }
                 <th className="num">Urlaub genehmigt</th>
                 <th className="num">beantragt</th>
                 <th className="num">geplant</th>
-                <th className="num">Sonstige Abwesenheit</th>
+                <th className="num">Andere Abwesenheiten</th>
                 <th className="num">Homeoffice</th>
               </tr>
             </thead>
