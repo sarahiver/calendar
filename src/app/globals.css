@@ -397,14 +397,9 @@ table.list { width: 100%; border-collapse: collapse; }
 .seg-btn + .seg-btn { border-left: 1px solid var(--line-strong); }
 .seg-btn.active { background: var(--accent); color: #fff; }
 
-/* ---------- Abteilungs-PIN ---------- */
-.pin-box { display: flex; flex-direction: column; gap: 10px; align-items: stretch; width: 100%; max-width: 340px; }
-.pin-box p { margin: 0; }
-.pin-box .code-input { width: 100%; }
-.pin-settings {
-  border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius);
-  padding: 10px 12px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px;
-}
-.pin-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
-.pin-head .hint { margin-top: 3px; }
-.pin-info { color: var(--ok); }
+/* ---------- Anmeldung (Vollbild) ---------- */
+.login-box { display: flex; flex-direction: column; gap: 10px; align-items: stretch; width: 100%; max-width: 360px; text-align: left; }
+.login-box strong { text-align: center; }
+.login-box p { margin: 0; }
+.login-box label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); }
+.login-box input { width: 100%; color: var(--text); }

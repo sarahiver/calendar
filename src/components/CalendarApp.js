@@ -11,7 +11,7 @@ import EntryDialog from './EntryDialog';
 import LoginDialog from './LoginDialog';
 import PeopleAdmin from './PeopleAdmin';
 import PasswordDialog from './PasswordDialog';
-import PinScreen from './PinScreen';
+import LoginScreen from './LoginScreen';
 
 const VIEWS = [
   { id: 'team', label: 'Team' },
@@ -48,7 +48,7 @@ export default function CalendarApp({ viewToken, title }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expired, setExpired] = useState(false);
-  const [needPin, setNeedPin] = useState(false);
+  const [needLogin, setNeedLogin] = useState(false);
   const [personFilter, setPersonFilter] = useState('all');
   const [showRejected, setShowRejected] = useState(false);
   const [dialog, setDialog] = useState(null);
@@ -99,11 +99,11 @@ export default function CalendarApp({ viewToken, title }) {
       const d = await api(`/api/data?from=${range.from}&to=${range.to}`);
       setData(d);
       setError(null);
-      setNeedPin(false);
+      setNeedLogin(false);
     } catch (e) {
-      if (e.code === 'pin_required') {
+      if (e.code === 'login_required') {
         setData({ me: null, people: [], entries: [], pending: [] });
-        setNeedPin(true);
+        setNeedLogin(true);
       } else {
         setError(e.message);
       }
@@ -222,22 +222,8 @@ export default function CalendarApp({ viewToken, title }) {
     );
   }
 
-  if (needPin) {
-    return (
-      <>
-        <PinScreen api={api} title={title} onDone={load} onLogin={() => setLoginOpen(true)} />
-        {loginOpen && (
-          <LoginDialog
-            api={api}
-            onClose={() => setLoginOpen(false)}
-            onDone={() => {
-              setLoginOpen(false);
-              load();
-            }}
-          />
-        )}
-      </>
-    );
+  if (needLogin) {
+    return <LoginScreen api={api} title={title} onDone={load} />;
   }
 
   return (
@@ -252,7 +238,7 @@ export default function CalendarApp({ viewToken, title }) {
                   {me.name} <span className="role">{roleLabel(me.role)}</span>
                 </span>
                 <button className="btn primary" onClick={() => openNew(me.id, today)}>+ Eintrag</button>
-                {isAdmin(me) && <button className="btn" onClick={() => setAdminOpen(true)}>Personen & PIN</button>}
+                {isAdmin(me) && <button className="btn" onClick={() => setAdminOpen(true)}>Personen</button>}
                 <button className="btn ghost" onClick={() => setPasswordOpen(true)}>Passwort</button>
                 <button className="btn ghost" onClick={logout}>Abmelden</button>
               </>

@@ -2,7 +2,6 @@ import 'server-only';
 import { NextResponse } from 'next/server';
 import { verifyViewToken } from './gate';
 import { getSessionUser } from './auth';
-import { hasPinAccess } from './pin';
 
 export const json = (data, status = 200) => NextResponse.json(data, { status });
 export const fail = (message, status = 400, code) =>
@@ -17,18 +16,18 @@ export class HttpError extends Error {
 }
 
 /**
- * Jeder API-Aufruf braucht das View-Token aus dem iFrame-Seitenaufruf.
- * Zusätzlich die Abteilungs-PIN (falls gesetzt) – angemeldete Personen brauchen sie nicht.
- * Optional: Anmeldung und bestimmte Rollen.
- * pin: false nur für die Anmelde-Routen (PIN eingeben, Passwort-Login).
+ * Jeder API-Aufruf braucht das View-Token aus dem iFrame-Seitenaufruf
+ * und eine Anmeldung – auch das reine Ansehen des Kalenders.
+ * Optional: Bearbeiten (login) und bestimmte Rollen.
+ * view: false nur für den Login selbst.
  */
-export async function guard(request, { login = false, roles, allowMustChange = false, pin = true } = {}) {
+export async function guard(request, { login = false, roles, allowMustChange = false, view = true } = {}) {
   if (!verifyViewToken(request.headers.get('x-view-token'))) {
     throw new HttpError('Ansicht abgelaufen. Bitte Seite neu laden.', 401, 'view_expired');
   }
   const user = await getSessionUser(request);
-  if (pin && !user && !(await hasPinAccess(request))) {
-    throw new HttpError('Bitte die Abteilungs-PIN eingeben.', 401, 'pin_required');
+  if (view && !user) {
+    throw new HttpError('Bitte mit E-Mail und Passwort anmelden.', 401, 'login_required');
   }
   if (login && !user) throw new HttpError('Bitte anmelden.', 401, 'login_required');
   // Mit Startpasswort darf nur das Passwort geändert werden

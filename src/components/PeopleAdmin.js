@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Modal from './Modal';
-import PinSettings from './PinSettings';
 import { ROLES, roleLabel, PERSON_COLORS, buildColorMap } from '@/lib/constants';
 
 const EMPTY = { name: '', short: '', email: '', role: 'mitarbeitend', active: true, sort: 0, password: '', color: '' };
@@ -65,7 +64,7 @@ export default function PeopleAdmin({ api, me, onClose }) {
   }
 
   return (
-    <Modal title="Personen & PIN verwalten" onClose={onClose} wide>
+    <Modal title="Personen verwalten" onClose={onClose} wide>
       {form ? (
         <form className="form" onSubmit={save}>
           <div className="row">
@@ -148,7 +147,6 @@ export default function PeopleAdmin({ api, me, onClose }) {
         </form>
       ) : (
         <>
-          <PinSettings api={api} />
           <div className="form-actions start">
             <button className="btn primary" onClick={() => setForm({ ...EMPTY, sort: people.length * 10 })}>
               + Person hinzufügen
